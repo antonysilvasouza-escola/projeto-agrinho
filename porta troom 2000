@@ -1,0 +1,86 @@
+import time
+
+class Porta:
+    def __init__(self, cor, chave_correta="1234"):
+        self.cor = cor
+        self.chave_correta = chave_correta
+        self.esta_aberta = False
+        self.esta_trancada = True
+
+    def destrancar(self, chave):
+        if not self.esta_trancada:
+            print("🔓 A porta já está destrancada.")
+            return
+        
+        if chave == self.chave_correta:
+            self.esta_trancada = False
+            print("🎯 Click! A porta foi destrancada com sucesso.")
+        else:
+            print("❌ Chave errada! A porta continua trancada.")
+
+    def trancar(self):
+        if self.esta_aberta:
+            print("⚠️ Você não pode trancar uma porta que está aberta! Feche-a primeiro.")
+        elif self.esta_trancada:
+            print("🔒 A porta já está trancada.")
+        else:
+            self.esta_trancada = True
+            print("🔒 Trancado! A porta agora está segura.")
+
+    def abrir(self):
+        if self.esta_aberta:
+            print("🚪 A porta já está escancarada.")
+        elif self.esta_trancada:
+            print("🛑 Bloqueado! Você tenta empurrar, mas a porta está trancada.")
+        else:
+            self.esta_aberta = True
+            print("🚪 Nheeeec... A porta se abriu.")
+
+    def fechar(self):
+        if not self.esta_aberta:
+            print("🚪 A porta já está fechada.")
+        else:
+            self.esta_aberta = False
+            print("💥 Bam! A porta foi fechada.")
+
+    def status(self):
+        estado_abertura = "Aberta" if self.esta_aberta else "Fechada"
+        estado_tranca = "Trancada" if self.esta_trancada else "Destrancada"
+        print(f"\n[ Status da Porta {self.cor.upper()} ]: {estado_abertura} e {estado_tranca}.")
+
+
+# --- Simulação do uso da porta ---
+if __name__ == "__main__":
+    # Criamos uma porta azul cuja senha da chave é "brawl2026"
+    minha_porta = Porta(cor="Azul", chave_correta="brawl2026")
+    
+    minha_porta.status()
+    time.sleep(1)
+
+    # Tentativa 1: Tentar abrir direto
+    minha_porta.abrir()
+    time.sleep(1)
+
+    # Tentativa 2: Colocar a chave errada
+    print("\n[Ação]: Tentando usar a chave 'xyz'...")
+    minha_porta.destrancar("xyz")
+    time.sleep(1)
+
+    # Tentativa 3: Usar a chave certa
+    print("\n[Ação]: Usando a chave correta...")
+    minha_porta.destrancar("brawl2026")
+    minha_porta.status()
+    time.sleep(1)
+
+    # Tentativa 4: Abrir e depois trancar sem fechar
+    print("\n[Ação]: Abrindo a porta...")
+    minha_porta.abrir()
+    print("\n[Ação]: Tentando trancar imediatamente...")
+    minha_porta.trancar()
+    time.sleep(1)
+
+    # Tentativa 5: Finalizando o ciclo corretamente
+    print("\n[Ação]: Fechando e trancando...")
+    minha_porta.fechar()
+    minha_porta.trancar()
+    minha_porta.status()
