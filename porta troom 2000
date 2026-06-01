@@ -1,86 +1,221 @@
-import time
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Porta Interativa - Simulação</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1e1e24;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
 
-class Porta:
-    def __init__(self, cor, chave_correta="1234"):
-        self.cor = cor
-        self.chave_correta = chave_correta
-        self.esta_aberta = False
-        self.esta_trancada = True
+        h1 {
+            margin-bottom: 10px;
+            color: #f1c40f;
+        }
 
-    def destrancar(self, chave):
-        if not self.esta_trancada:
-            print("🔓 A porta já está destrancada.")
-            return
+        /* Container do Cenário da Porta */
+        .cenario {
+            width: 200px;
+            height: 300px;
+            background-color: #34495e;
+            border: 8px solid #2c3e50;
+            border-bottom: none;
+            position: relative;
+            perspective: 600px; /* Efeito 3D para a abertura */
+            margin-bottom: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        /* A estrutura física da porta */
+        .porta {
+            width: 100%;
+            height: 100%;
+            background-color: #c0392b;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform-origin: left center; /* Abre girando pela esquerda */
+            transition: transform 0.8s ease-in-out, background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            box-sizing: border-box;
+            padding-right: 15px;
+            z-index: 2;
+        }
+
+        /* Maçaneta da porta */
+        .macaneta {
+            width: 15px;
+            height: 15px;
+            background-color: #f1c40f;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        /* Classes de Estado controladas pelo JavaScript */
+        .porta.aberta {
+            transform: rotateY(-110deg); /* Abre a porta no eixo 3D */
+        }
+
+        .porta.trancada {
+            background-color: #7f8c8d; /* Fica cinza quando trancada */
+        }
+
+        /* Fundo dentro da porta (sala escura) */
+        .interior {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            z-index: 1;
+        }
+
+        /* Painel de Controles */
+        .controles {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            max-width: 350px;
+            width: 100%;
+            padding: 0 20px;
+        }
+
+        button {
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #3498db;
+            color: white;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-perigo { background-color: #e74c3c; }
+        .btn-perigo:hover { background-color: #c0392b; }
         
-        if chave == self.chave_correta:
-            self.esta_trancada = False
-            print("🎯 Click! A porta foi destrancada com sucesso.")
-        else:
-            print("❌ Chave errada! A porta continua trancada.")
+        .btn-sucesso { background-color: #2ecc71; }
+        .btn-sucesso:hover { background-color: #27ae60; }
 
-    def trancar(self):
-        if self.esta_aberta:
-            print("⚠️ Você não pode trancar uma porta que está aberta! Feche-a primeiro.")
-        elif self.esta_trancada:
-            print("🔒 A porta já está trancada.")
-        else:
-            self.esta_trancada = True
-            print("🔒 Trancado! A porta agora está segura.")
+        /* Terminal de Logs */
+        .log-painel {
+            margin-top: 20px;
+            background-color: #000;
+            border: 1px solid #333;
+            font-family: monospace;
+            padding: 15px;
+            width: 85%;
+            max-width: 450px;
+            height: 80px;
+            overflow-y: auto;
+            color: #2ecc71;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
 
-    def abrir(self):
-        if self.esta_aberta:
-            print("🚪 A porta já está escancarada.")
-        elif self.esta_trancada:
-            print("🛑 Bloqueado! Você tenta empurrar, mas a porta está trancada.")
-        else:
-            self.esta_aberta = True
-            print("🚪 Nheeeec... A porta se abriu.")
-
-    def fechar(self):
-        if not self.esta_aberta:
-            print("🚪 A porta já está fechada.")
-        else:
-            self.esta_aberta = False
-            print("💥 Bam! A porta foi fechada.")
-
-    def status(self):
-        estado_abertura = "Aberta" if self.esta_aberta else "Fechada"
-        estado_tranca = "Trancada" if self.esta_trancada else "Destrancada"
-        print(f"\n[ Status da Porta {self.cor.upper()} ]: {estado_abertura} e {estado_tranca}.")
-
-
-# --- Simulação do uso da porta ---
-if __name__ == "__main__":
-    # Criamos uma porta azul cuja senha da chave é "brawl2026"
-    minha_porta = Porta(cor="Azul", chave_correta="brawl2026")
+    <h1>Porta Inteligente</h1>
     
-    minha_porta.status()
-    time.sleep(1)
+    <div class="cenario">
+        <div class="interior">👀</div>
+        <div id="elementoPorta" class="porta trancada">
+            <div class="macaneta"></div>
+        </div>
+    </div>
 
-    # Tentativa 1: Tentar abrir direto
-    minha_porta.abrir()
-    time.sleep(1)
+    <div class="controles">
+        <button class="btn-sucesso" onclick="destrancar()">🔓 Destrancar</button>
+        <button class="btn-perigo" onclick="trancar()">🔒 Trancar</button>
+        <button onclick="abrir()">🚪 Abrir</button>
+        <button onclick="fechar()">💥 Fechar</button>
+    </div>
 
-    # Tentativa 2: Colocar a chave errada
-    print("\n[Ação]: Tentando usar a chave 'xyz'...")
-    minha_porta.destrancar("xyz")
-    time.sleep(1)
+    <div class="log-painel" id="log">
+        [Sistema]: Porta inicializada. Estado atual: Fechada e Trancada.
+    </div>
 
-    # Tentativa 3: Usar a chave certa
-    print("\n[Ação]: Usando a chave correta...")
-    minha_porta.destrancar("brawl2026")
-    minha_porta.status()
-    time.sleep(1)
+    <script>
+        // Estados lógicos da nossa porta
+        let estaAberta = false;
+        let estaTrancada = true;
 
-    # Tentativa 4: Abrir e depois trancar sem fechar
-    print("\n[Ação]: Abrindo a porta...")
-    minha_porta.abrir()
-    print("\n[Ação]: Tentando trancar imediatamente...")
-    minha_porta.trancar()
-    time.sleep(1)
+        const elementoPorta = document.getElementById('elementoPorta');
+        const painelLog = document.getElementById('log');
 
-    # Tentativa 5: Finalizando o ciclo corretamente
-    print("\n[Ação]: Fechando e trancando...")
-    minha_porta.fechar()
-    minha_porta.trancar()
-    minha_porta.status()
+        function adicionarLog(mensagem) {
+            painelLog.innerHTML += `<br>> ${mensagem}`;
+            painelLog.scrollTop = painelLog.scrollHeight; // Rola o log para baixo automaticamente
+        }
+
+        function destrancar() {
+            if (!estaTrancada) {
+                adicionarLog("A porta já está destrancada.");
+                return;
+            }
+            estaTrancada = false;
+            elementoPorta.classList.remove('trancada');
+            adicionarLog("Click! A porta foi destrancada.");
+        }
+
+        function trancar() {
+            if (estaAberta) {
+                adicionarLog("Erro: Feche a porta antes de trancar!");
+                return;
+            }
+            if (estaTrancada) {
+                adicionarLog("A porta já está trancada.");
+                return;
+            }
+            estaTrancada = true;
+            elementoPorta.classList.add('trancada');
+            adicionarLog("Trancado! A porta agora está segura.");
+        }
+
+        function abrir() {
+            if (estaAberta) {
+                adicionarLog("A porta já está escancarada.");
+                return;
+            }
+            if (estaTrancada) {
+                adicionarLog("Bloqueado: Destranque a porta primeiro!");
+                return;
+            }
+            estaAberta = true;
+            elementoPorta.classList.add('aberta');
+            adicionarLog("Nheeeec... A porta se abriu.");
+        }
+
+        function fechar() {
+            if (!estaAberta) {
+                adicionarLog("A porta já está fechada.");
+                return;
+            }
+            estaAberta = false;
+            elementoPorta.classList.remove('aberta');
+            adicionarLog("Bam! A porta foi fechada.");
+        }
+    </script>
+
+</body>
+</html>
+
