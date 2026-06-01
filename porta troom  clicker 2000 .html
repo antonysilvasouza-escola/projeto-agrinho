@@ -313,3 +313,323 @@
                 <h3>Skin: Porta de Carvalho 🪵</h3>
                 <p>Transforma o visual e dá +5 permanente no Clique</p>
             </div>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Door Clicker Tycoon - Audio Update</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a24;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        h1 {
+            color: #f1c40f;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .placar {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2ecc71;
+            margin-bottom: 20px;
+            background: #111;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        .cenario {
+            width: 180px;
+            height: 270px;
+            background-color: #2c3e50;
+            border: 8px solid #34495e;
+            border-bottom: none;
+            position: relative;
+            perspective: 600px;
+            cursor: pointer;
+        }
+
+        .porta {
+            width: 100%;
+            height: 100%;
+            background-color: #a04000;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform-origin: left center;
+            transition: transform 0.1s ease, border 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            box-sizing: border-box;
+            padding-right: 15px;
+            z-index: 2;
+            border: 4px solid #5e2500;
+        }
+
+        .porta.skin-minecraft {
+            background-color: #4a2f1b;
+            background-image: 
+                linear-gradient(90deg, rgba(0,0,0,0.15) 50%, transparent 50%),
+                linear-gradient(rgba(0,0,0,0.1) 50%, transparent 50%);
+            background-size: 16px 16px;
+            border: 8px solid #2d1a0e;
+            display: grid;
+            grid-template-rows: 1fr 1fr;
+            padding: 15px;
+            gap: 15px;
+            justify-content: stretch;
+            align-items: stretch;
+        }
+
+        .porta.skin-minecraft .janelas-mc {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .porta.skin-minecraft .janela-bloco {
+            background-color: #1a1a24;
+            border: 4px solid #2d1a0e;
+        }
+
+        .porta.skin-minecraft .painel-inferior {
+            border: 4px solid #2d1a0e;
+            background-color: #3d2514;
+        }
+
+        .porta.skin-minecraft .macaneta {
+            display: none;
+        }
+
+        .porta:active {
+            transform: scale(0.97) rotateY(-10deg);
+        }
+
+        .porta.tremendo {
+            animation: tremer 0.1s infinite;
+            border: 6px solid #e74c3c !important;
+        }
+
+        @keyframes tremer {
+            0% { transform: translate(2px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(0px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(2px, 1px) rotate(-1deg); }
+            100% { transform: translate(2px, -2px) rotate(0deg); }
+        }
+
+        .macaneta {
+            width: 15px;
+            height: 15px;
+            background-color: #f1c40f;
+            border-radius: 50%;
+        }
+
+        .interior {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            z-index: 1;
+        }
+
+        .alerta-container {
+            height: 40px;
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .alerta-ativo {
+            color: #e74c3c;
+            animation: piscar 0.5s infinite alternate;
+        }
+
+        @keyframes piscar {
+            from { opacity: 1; }
+            to { opacity: 0.3; }
+        }
+
+        #btnAtender {
+            background-color: #e67e22;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            display: none;
+            margin-top: 5px;
+            box-shadow: 0 0 15px #e67e22;
+        }
+
+        #btnAtender:hover {
+            background-color: #d35400;
+        }
+
+        .loja {
+            margin-top: 20px;
+            width: 90%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .upgrade-card {
+            background-color: #2c3e50;
+            padding: 12px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #34495e;
+        }
+
+        .card-tnt { border: 2px dashed #ff3838; background-color: #3d1d1d; }
+        .card-skin { border: 2px solid #5c3e26; background-color: #2e2116; }
+
+        .upgrade-info h3 { margin: 0; font-size: 1rem; color: #ecf0f1; }
+        .upgrade-info p { margin: 2px 0 0 0; font-size: 0.8rem; color: #bdc3c7; }
+
+        button {
+            padding: 8px 15px;
+            font-weight: bold;
+            background-color: #2ecc71;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover { background-color: #27ae60; }
+        button:disabled { background-color: #7f8c8d; cursor: not-allowed; }
+
+        .btn-tnt { background-color: #ff3838; }
+        .btn-tnt:hover { background-color: #cf2323; }
+        .btn-skin { background-color: #875e3b; }
+        .btn-skin:hover { background-color: #6e4a2c; }
+
+        .estatisticas {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #95a5a6;
+        }
+
+        .lula-evento {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(139, 0, 0, 0.95);
+            z-index: 999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .lula-evento h2 { font-size: 2.5rem; color: #fff; margin-bottom: 10px; }
+        .lula-evento p { font-size: 1.4rem; color: #f1c40f; max-width: 500px; }
+        
+        /* Botão para ativar música */
+        #btnAudioStart {
+            background-color: #f1c40f;
+            color: #111;
+            padding: 10px 20px;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Door Clicker Tycoon</h1>
+    <button id="btnAudioStart" onclick="ligarMusica()">🎵 Ligar Música e Sons</button>
+    <div class="placar">🪙 <span id="txtMoedas">0</span> Moedas</div>
+
+    <div class="cenario" onclick="clicarNaPorta()">
+        <div class="interior" id="emojiInterior">🚪</div>
+        <div class="porta" id="elementoPorta">
+            <div class="janelas-mc" id="janelasMc" style="display: none;">
+                <div class="janela-bloco"></div>
+                <div class="janela-bloco"></div>
+            </div>
+            <div class="painel-inferior" id="painelMc" style="display: none;"></div>
+            <div class="macaneta" id="macanetaPadrao"></div>
+        </div>
+    </div>
+
+    <div class="alerta-container">
+        <span id="txtAlerta"></span>
+        <button id="btnAtender" onclick="atenderPorta(event)">🚪 ATENDER PORTA!</button>
+    </div>
+
+    <div class="estatisticas">
+        Clique: +<span id="txtDpc">1</span> | Auto: <span id="txtDps">0</span>/s | TNTs: <span id="txtTnt">0</span>
+    </div>
+
+    <div class="loja">
+        <div class="upgrade-card">
+            <div class="upgrade-info">
+                <h3>Grampo de Cabelo</h3>
+                <p>Aumenta seu clique em +1</p>
+            </div>
+            <button id="btnUpgrade1" onclick="comprarClique(event)">Comprar: 🪙15</button>
+        </div>
+
+        <div class="upgrade-card">
+            <div class="upgrade-info">
+                <h3>Pé de Cabra Automático</h3>
+                <p>Gera +1 moeda por segundo</p>
+            </div>
+            <button id="btnUpgrade2" onclick="comprarAuto(event)">Comprar: 🪙100</button>
+        </div>
+
+        <div class="upgrade-card card-tnt">
+            <div class="upgrade-info">
+                <h3>TNT do Minecraft 🧨</h3>
+                <p>Multiplica em 5x o bônus de atender a porta</p>
+            </div>
+            <button id="btnUpgradeTnt" class="btn-tnt" onclick="comprarTnt(event)">Comprar: 🪙350</button>
+        </div>
+
+        <div class="upgrade-card card-skin">
+            <div class="upgrade-info">
+                <h3>Skin: Porta de Carvalho 🪵</h3>
+                <p>Transforma o visual e dá +5 permanente no Clique</p>
+            </div>
+            <button id="btnUpgradeSkin" class="btn-skin" onclick="comprarSkin(event)">Comprar: 🪙500</button>
+        </div>
+    </div>
+
+    <div id="telaLula" class="lula-evento">
+        <h2>COMPANHEIRO! 🚩</h2>
+        <p>Você não abriu a porta! O Presidente Lula confiscou todas as suas moedas para o orçamento do governo!</p>
+        <div style="font-size: 5rem; margin: 20px 0;">🦑💸</div>
