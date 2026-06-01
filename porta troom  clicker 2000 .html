@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Door Clicker Tycoon - Edição Brasília</title>
+    <title>Door Clicker Tycoon - Minecraft Edition</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -48,6 +48,7 @@
             cursor: pointer;
         }
 
+        /* PORTA PADRÃO */
         .porta {
             width: 100%;
             height: 100%;
@@ -63,16 +64,55 @@
             box-sizing: border-box;
             padding-right: 15px;
             z-index: 2;
+            border: 4px solid #5e2500;
+        }
+
+        /* SKIN DA PORTA DO MINECRAFT (Estilo Carvalho Escuro Pixelado) */
+        .porta.skin-minecraft {
+            background-color: #4a2f1b;
+            background-image: 
+                linear-gradient(90deg, rgba(0,0,0,0.15) 50%, transparent 50%),
+                linear-gradient(rgba(0,0,0,0.1) 50%, transparent 50%);
+            background-size: 16px 16px; /* Textura pixelada */
+            border: 8px solid #2d1a0e;
+            display: grid;
+            grid-template-rows: 1fr 1fr;
+            padding: 15px;
+            gap: 15px;
+            justify-content: stretch;
+            align-items: stretch;
+        }
+
+        /* Janelinhas vazadas da porta do Minecraft */
+        .porta.skin-minecraft .janelas-mc {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .porta.skin-minecraft .janela-bloco {
+            background-color: #1a1a24; /* Mostra o fundo escuro através da porta */
+            border: 4px solid #2d1a0e;
+        }
+
+        .porta.skin-minecraft .painel-inferior {
+            border: 4px solid #2d1a0e;
+            background-color: #3d2514;
+        }
+
+        /* Desativa a maçaneta redonda comum quando a skin está ativa */
+        .porta.skin-minecraft .macaneta {
+            display: none;
         }
 
         .porta:active {
             transform: scale(0.97) rotateY(-10deg);
         }
 
-        /* Alerta visual de alguém batendo */
+        /* Alerta de alguém batendo */
         .porta.tremendo {
             animation: tremer 0.1s infinite;
-            border: 4px solid #e74c3c;
+            border: 6px solid #e74c3c !important;
         }
 
         @keyframes tremer {
@@ -84,7 +124,6 @@
             50% { transform: translate(-1px, 2px) rotate(-1deg); }
             60% { transform: translate(-3px, 1px) rotate(0deg); }
             70% { transform: translate(2px, 1px) rotate(-1deg); }
-            85% { transform: translate(-1px, -1px) rotate(1deg); }
             100% { transform: translate(2px, -2px) rotate(0deg); }
         }
 
@@ -107,7 +146,6 @@
             z-index: 1;
         }
 
-        /* Alerta de Perigo */
         .alerta-container {
             height: 40px;
             margin-top: 15px;
@@ -125,7 +163,6 @@
             to { opacity: 0.3; }
         }
 
-        /* Botão Especial de Atender */
         #btnAtender {
             background-color: #e67e22;
             padding: 10px 20px;
@@ -147,6 +184,9 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
+            max-height: 230px;
+            overflow-y: auto;
+            padding-right: 5px;
         }
 
         .upgrade-card {
@@ -159,17 +199,11 @@
             border: 1px solid #34495e;
         }
 
-        .upgrade-info h3 {
-            margin: 0;
-            font-size: 1rem;
-            color: #ecf0f1;
-        }
+        .card-tnt { border: 2px dashed #ff3838; background-color: #3d1d1d; }
+        .card-skin { border: 2px solid #5c3e26; background-color: #2e2116; }
 
-        .upgrade-info p {
-            margin: 2px 0 0 0;
-            font-size: 0.8rem;
-            color: #bdc3c7;
-        }
+        .upgrade-info h3 { margin: 0; font-size: 1rem; color: #ecf0f1; }
+        .upgrade-info p { margin: 2px 0 0 0; font-size: 0.8rem; color: #bdc3c7; }
 
         button {
             padding: 8px 15px;
@@ -182,14 +216,13 @@
             transition: background 0.2s;
         }
 
-        button:hover {
-            background-color: #27ae60;
-        }
+        button:hover { background-color: #27ae60; }
+        button:disabled { background-color: #7f8c8d; cursor: not-allowed; }
 
-        button:disabled {
-            background-color: #7f8c8d;
-            cursor: not-allowed;
-        }
+        .btn-tnt { background-color: #ff3838; }
+        .btn-tnt:hover { background-color: #cf2323; }
+        .btn-skin { background-color: #875e3b; }
+        .btn-skin:hover { background-color: #6e4a2c; }
 
         .estatisticas {
             margin-top: 10px;
@@ -197,7 +230,6 @@
             color: #95a5a6;
         }
 
-        /* Tela de Game Over (Lula roubou) */
         .lula-evento {
             display: none;
             position: fixed;
@@ -215,17 +247,8 @@
             box-sizing: border-box;
         }
 
-        .lula-evento h2 {
-            font-size: 2.5rem;
-            color: #fff;
-            margin-bottom: 10px;
-        }
-
-        .lula-evento p {
-            font-size: 1.4rem;
-            color: #f1c40f;
-            max-width: 500px;
-        }
+        .lula-evento h2 { font-size: 2.5rem; color: #fff; margin-bottom: 10px; }
+        .lula-evento p { font-size: 1.4rem; color: #f1c40f; max-width: 500px; }
     </style>
 </head>
 <body>
@@ -233,11 +256,18 @@
     <h1>Door Clicker Tycoon</h1>
     <div class="placar">🪙 <span id="txtMoedas">0</span> Moedas</div>
 
-    <!-- Elemento clicável principal -->
+    <!-- Elemento da Porta com os blocos internos para a Skin -->
     <div class="cenario" onclick="clicarNaPorta()">
         <div class="interior" id="emojiInterior">🚪</div>
         <div class="porta" id="elementoPorta">
-            <div class="macaneta"></div>
+            <!-- Estruturas internas invisíveis que só aparecem com a skin do Minecraft ativa -->
+            <div class="janelas-mc" id="janelasMc" style="display: none;">
+                <div class="janela-bloco"></div>
+                <div class="janela-bloco"></div>
+            </div>
+            <div class="painel-inferior" id="painelMc" style="display: none;"></div>
+            
+            <div class="macaneta" id="macanetaPadrao"></div>
         </div>
     </div>
 
@@ -248,7 +278,7 @@
     </div>
 
     <div class="estatisticas">
-        Ganho por Clique: +<span id="txtDpc">1</span> | Automático: <span id="txtDps">0</span>/s
+        Clique: +<span id="txtDpc">1</span> | Auto: <span id="txtDps">0</span>/s | TNTs: <span id="txtTnt">0</span>
     </div>
 
     <!-- Seção da Loja -->
@@ -268,65 +298,18 @@
             </div>
             <button id="btnUpgrade2" onclick="comprarAuto(event)">Comprar: 🪙100</button>
         </div>
-    </div>
 
-    <!-- Tela do Evento de Roubo -->
-    <div id="telaLula" class="lula-evento">
-        <h2>COMPANHEIRO! 🚩</h2>
-        <p>Você não abriu a porta! O Presidente Lula confiscou todas as suas moedas para o orçamento do governo!</p>
-        <div style="font-size: 5rem; margin: 20px 0;">🦑💸</div>
-        <button onclick="fecharTelaRoubo()" style="padding: 15px 30px; font-size: 1.2rem; background-color: #fff; color: #8b0000;">Trabalhar de novo</button>
-    </div>
+        <div class="upgrade-card card-tnt">
+            <div class="upgrade-info">
+                <h3>TNT do Minecraft 🧨</h3>
+                <p>Multiplica em 5x o bônus de atender a porta</p>
+            </div>
+            <button id="btnUpgradeTnt" class="btn-tnt" onclick="comprarTnt(event)">Comprar: 🪙350</button>
+        </div>
 
-    <script>
-        let moedas = 0;
-        let danoPorClique = 1;
-        let danoPorSegundo = 0;
-
-        let precoUpgrade1 = 15;
-        let precoUpgrade2 = 100;
-
-        // Variáveis da nova mecânica
-        let alguemBatendo = false;
-        let tempoParaAtender = 6; // Segundos limite para clicar
-        let cronometroAtender = null;
-
-        const txtMoedas = document.getElementById('txtMoedas');
-        const txtDpc = document.getElementById('txtDpc');
-        const txtDps = document.getElementById('txtDps');
-        const btnUpgrade1 = document.getElementById('btnUpgrade1');
-        const btnUpgrade2 = document.getElementById('btnUpgrade2');
-        const emojiInterior = document.getElementById('emojiInterior');
-        
-        const elementoPorta = document.getElementById('elementoPorta');
-        const txtAlerta = document.getElementById('txtAlerta');
-        const btnAtender = document.getElementById('btnAtender');
-        const telaLula = document.getElementById('telaLula');
-
-        const tesouros = ["💎", "💰", "👑", "👻", "🍕", "🐱", "👽", "⚔️"];
-
-        function atualizarInterface() {
-            txtMoedas.innerText = Math.floor(moedas);
-            txtDpc.innerText = danoPorClique;
-            txtDps.innerText = danoPorSegundo;
-
-            btnUpgrade1.disabled = moedas < precoUpgrade1;
-            btnUpgrade1.innerText = `Comprar: 🪙${precoUpgrade1}`;
-
-            btnUpgrade2.disabled = moedas < precoUpgrade2;
-            btnUpgrade2.innerText = `Comprar: 🪙${precoUpgrade2}`;
-        }
-
-        function clicarNaPorta() {
-            if (alguemBatendo) return; // Bloqueia cliques normais enquanto batem na porta
-            moedas += danoPorClique;
-            const itemAleatorio = tesouros[Math.floor(Math.random() * tesouros.length)];
-            emojiInterior.innerText = itemAleatorio;
-            atualizarInterface();
-        }
-
-        // Nova Mecânica: Evento do Lula batendo na porta
-        function simularBatidaNaPorta() {
-            if (alguemBatendo) return;
-
-
+        <!-- NOVO UPGRADE: SKIN PORTA DO MINECRAFT -->
+        <div class="upgrade-card card-skin">
+            <div class="upgrade-info">
+                <h3>Skin: Porta de Carvalho 🪵</h3>
+                <p>Transforma o visual e dá +5 permanente no Clique</p>
+            </div>
