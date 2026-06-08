@@ -47,4 +47,212 @@
     <canvas id="pongCanvas" width="800" height="500"></canvas>
     <div class="controls">
         <p>Use as teclas <strong>Seta Para Cima (↑)</strong> e <strong>Seta Para Baixo (↓)</strong> para mover.</p>
-        <p>A velocidade
+        <p>A velocidade da bola aumenta a cada rebatida!</p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("pongCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let shakeTime = 0;
+        let shakeIntensity = 0;
+        let particles = [];
+
+        const ball = {
+            x: 400,
+            y: 250,
+            radius: 8,
+            speed: 6,
+            velocityX: 6,
+            velocityY: 4,
+            color: "#00fff2",
+            trail: []
+        };
+
+        const player = {
+            x: 775,
+            y: 200,
+            width: 12,
+            height: 100,
+            score: 0,
+            color: "#ff0077"
+        };
+
+        const bot = {
+            x: 13,
+            y: 200,
+            width: 12,
+            height: 100,
+            score: 0,
+            color: "#00fff2"
+        };
+
+        const keys = {};
+        window.addEventListener("keydown", e => { keys[e.code] = true; });
+        window.addEventListener("keyup", e => { keys[e.code] = false; });
+
+        function createParticles(x, y, color) {
+            for (let i = 0; i < 8; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6,
+                    radius: Math.random() * 3 + 1,
+                    alpha: 1,
+                    color: color
+                });
+            }
+        }
+
+        function triggerShake(intensity, duration) {
+            shakeIntensity = intensity;
+            shakeTime = duration;
+        }
+
+        function resetBall() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.speed = 6;
+            ball.velocityX = -ball.velocityX;
+            ball.velocityY = (Math.random() - 0.5) * 6;
+            ball.trail = [];
+        }
+
+        function collision(b, p) {
+            return b.x + b.radius > p.x && 
+                   b.x - b.radius < p.x + p.width && 
+                   b.y + b.radius > p.y && 
+                   b.y - b.radius < p.y + p.height;
+        }
+
+        function update() {
+            if (keys["ArrowUp"] && player.y > 10) player.y -= 8;
+            if (keys["ArrowDown"] && player.y < canvas.height - player.height - 10) player.y += 8;
+
+            let targetY = ball.y - (bot.height / 2);
+            bot.y += (targetY - bot.y) * 0.12; 
+
+            ball.trail.push({ x: ball.x, y: ball.y });
+            if (ball.trail.length > 8) ball.trail.shift();
+
+            ball.x += ball.velocityX;
+            ball.y += ball.velocityY;
+
+            if (ball.y - ball.radius < 0 || ball.y + ball.radius > canvas.height) {
+                ball.velocityY = -ball.velocityY;
+                createParticles(ball.x, ball.y, "#ffffff");
+            }
+
+            let currentPaddle = (ball.x < canvas.width / 2) ? bot : player;
+
+            if (collision(ball, currentPaddle)) {
+                let collidePoint = (ball.y - (currentPaddle.y + currentPaddle.height / 2));
+                collidePoint = collidePoint / (currentPaddle.height / 2);
+                let angleRad = (Math.PI / 4) * collidePoint;
+
+                let direction = (ball.x < canvas.width / 2) ? 1 : -1;
+                ball.speed += 0.4;
+                ball.velocityX = direction * ball.speed * Math.cos(angleRad);
+                ball.velocityY = ball.speed * Math.sin(angleRad);
+
+                createParticles(ball.x, ball.y, currentPaddle.color);
+            }
+
+            if (ball.x - ball.radius < 0) {
+                player.score++;
+                triggerShake(8, 15);
+                resetBall();
+            } else if (ball.x + ball.radius > canvas.width) {
+                bot.score++;
+                triggerShake(8, 15);
+                resetBall();
+            }
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.alpha -= 0.02;
+                if (p.alpha <= 0) particles.splice(i, 1);
+            }
+
+            if (shakeTime > 0) shakeTime--;
+        }
+
+        function render() {
+            ctx.save();
+            
+            if (shakeTime > 0) {
+                let dx = (Math.random() - 0.5) * shakeIntensity;
+                let dy = (Math.random() - 0.5) * shakeIntensity;
+                ctx.translate(dx, dy);
+            }
+
+            ctx.fillStyle = "rgba(6, 6, 17, 0.3)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+            ctx.lineWidth = 4;
+            ctx.setLineDash([10, 10]);
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
+            ctx.font = "bold 80px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(bot.score, canvas.width / 4, canvas.height / 2 + 30);
+            ctx.fillText(player.score, 3 * canvas.width / 4, canvas.height / 2 + 30);
+
+            ball.trail.forEach((pos, index) => {
+                ctx.fillStyle = `rgba(0, 255, 242, ${0.1 * index})`;
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, ball.radius * (index / 8), 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = ball.color;
+            ctx.fillStyle = ball.color;
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.shadowColor = bot.color;
+            ctx.fillStyle = bot.color;
+            ctx.fillRect(bot.x, bot.y, bot.width, bot.height);
+
+            ctx.shadowColor = player.color;
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            
+            ctx.shadowBlur = 0;
+
+            particles.forEach(p => {
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.alpha;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1.0;
+
+            ctx.restore();
+        }
+
+        function loop() {
+            update();
+            render();
+            requestAnimationFrame(loop);
+        }
+
+        // Garante que o jogo comece assim que a página estiver totalmente carregada
+        window.onload = function() {
+            requestAnimationFrame(loop);
+        };
+    </script>
+</body>
+</html>
