@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo de Corrida Retro</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #222;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        canvas {
+            border: 4px solid #fff;
+            background-color: #333;
+        }
+        .instrucoes {
+            margin-top: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Desvie dos Obstáculos!</h1>
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
+    <div class="instrucoes">
+        <p>Use as setas <strong>Esquerda (←)</strong> e <strong>Direita (→)</strong> para mover o carro vermelho.</p>
+        <p>Pressione <strong>Espaço</strong> para reiniciar se bater.</p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Configurações do Jogador
+        const player = {
+            x: 175,
+            y: 500,
+            width: 50,
+            height: 80,
+            speed: 5,
+            color: "#ff0000"
+        };
+
+        // Configurações dos Obstáculos (Outros carros)
+        const obstacles = [];
+        const obstacleWidth = 50;
+        const obstacleHeight = 80;
+        let obstacleSpeed = 4;
+        let spawnTimer = 0;
+
+        // Estado do Jogo
+        let score = 0;
+        let gameOver = false;
+        const keys = {};
+
+        // Controles por teclado
+        window.addEventListener("keydown", (e) => {
+            keys[e.code] = true;
+            if (gameOver && e.code === "Space") {
+                resetGame();
+            }
+        });
+        window.addEventListener("keyup", (e) => {
+            keys[e.code] = false;
+        });
+
+        function resetGame() {
+            player.x = 175;
+            obstacles.length = 0;
+            obstacleSpeed = 4;
+            score = 0;
+            gameOver = false;
+            update();
+        }
+
+        function spawnObstacle() {
+            // Escolhe uma posição X aleatória dentro das pistas
+            const lanes = [50, 150, 250, 300];
+            const randomX = lanes[Math.floor(Math.random() * lanes.length)];
+            
+            // Cores aleatórias para os carros inimigos
+            const colors = ["#00ff00", "#0000ff", "#ffff00", "#ff00ff"];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+            obstacles.push({
+                x: randomX,
+                y: -obstacleHeight,
+                width: obstacleWidth,
+                height: obstacleHeight,
+                color: randomColor
+            });
+        }
+
+        function checkCollision(rect1, rect2) {
+            return rect1.x < rect2.x + rect2.width &&
+                   rect1.x + rect1.width > rect2.x &&
+                   rect1.y < rect2.y + rect2.height &&
+                   rect1.y + rect1.height > rect2.y;
+        }
+
+        // Loop principal do jogo
+        function update() {
+            if (gameOver) {
+                ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.fillStyle = "white";
+                ctx.font = "30px Arial";
+                ctx.fillText("FIM DE JOGO", 110, 280);
+                ctx.font = "20px Arial";
+                ctx.fillText(`Pontuação Final: ${score}`, 125, 320);
+                ctx.fillText("Pressione ESPAÇO para reiniciar", 60, 360);
+                return;
+            }
+
+            // Limpar o canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Desenhar a Estrada (Linhas laterais e central)
+            ctx.fillStyle = "#555";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = "white";
+            // Linhas divisórias tracejadas
+            ctx.setLineDash([20, 20]);
+            ctx.strokeStyle = "#fff";
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(133, 0); ctx.lineTo(133, canvas.height);
+            ctx.moveTo(266, 0); ctx.lineTo(266, canvas.height);
+            ctx.stroke();
+
+            // Movimento do Jogador
