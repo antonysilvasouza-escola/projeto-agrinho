@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jogo de Ping Pong Clássico</title>
+    <title>Neon Pong Evolution</title>
     <style>
         body {
             margin: 0;
-            background-color: #111;
-            color: white;
-            font-family: 'Courier New', Courier, monospace;
+            background-color: #0a0a16;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -17,141 +17,108 @@
             height: 100vh;
             overflow: hidden;
         }
-        canvas {
-            border: 4px solid #fff;
-            background-color: #000;
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 0 0 10px #00fff2, 0 0 20px #00fff2;
         }
-        .instrucoes {
+        canvas {
+            border: 2px solid #00fff2;
+            box-shadow: 0 0 20px rgba(0, 255, 242, 0.3);
+            background-color: #060611;
+            border-radius: 8px;
+        }
+        .controls {
             margin-top: 15px;
+            color: #8a8ab0;
+            font-size: 0.9rem;
             text-align: center;
-            max-width: 500px;
+        }
+        strong {
+            color: #ff0077;
         }
     </style>
 </head>
 <body>
 
-    <h1>PING PONG</h1>
+    <h1>Neo Pong</h1>
     <canvas id="pongCanvas" width="800" height="500"></canvas>
-    <div class="instrucoes">
-        <p><strong>Controles:</strong> Use as setas <strong>Para Cima (↑)</strong> e <strong>Para Baixo (↓)</strong> para mover a sua raquete (direita).</p>
-        <p>O bot controla a raquete da esquerda. Quem fizer 7 pontos primeiro ganha!</p>
+    <div class="controls">
+        <p>Use <strong>Seta Para Cima (↑)</strong> e <strong>Seta Para Baixo (↓)</strong> para mover.</p>
+        <p>A velocidade da bola aumenta a cada rebatida!</p>
     </div>
 
     <script>
         const canvas = document.getElementById("pongCanvas");
         const ctx = canvas.getContext("2d");
 
-        // Configurações da Bola
+        // Estado de tremor de tela (Screenshake)
+        let shakeTime = 0;
+        let shakeIntensity = 0;
+
+        // Partículas para o efeito de impacto
+        let particles = [];
+
+        // Bola com rastro (trail)
         const ball = {
             x: canvas.width / 2,
             y: canvas.height / 2,
-            radius: 10,
-            speed: 5,
-            velocityX: 5,
-            velocityY: 5,
-            color: "#FFF"
+            radius: 8,
+            speed: 6,
+            velocityX: 6,
+            velocityY: 4,
+            color: "#00fff2",
+            trail: []
         };
 
-        // Raquete do Usuário (Direita)
-        const user = {
-            x: canvas.width - 20,
+        // Raquetes
+        const player = {
+            x: canvas.width - 25,
             y: canvas.height / 2 - 50,
-            width: 10,
+            width: 12,
             height: 100,
             score: 0,
-            color: "#FFF"
+            color: "#ff0077"
         };
 
-        // Raquete do Computador (Esquerda)
-        const com = {
-            x: 10,
+        const bot = {
+            x: 13,
             y: canvas.height / 2 - 50,
-            width: 10,
+            width: 12,
             height: 100,
             score: 0,
-            color: "#FFF"
+            color: "#00fff2"
         };
 
-        // Rede do meio do campo
-        const net = {
-            x: (canvas.width / 2) - 1,
-            y: 0,
-            width: 2,
-            height: 10,
-            color: "#FFF"
-        };
-
-        // Controles por teclado
+        // Teclado
         const keys = {};
-        window.addEventListener("keydown", (e) => keys[e.code] = true);
-        window.addEventListener("keyup", (e) => keys[e.code] = false);
+        window.addEventListener("keydown", e => keys[e.code] = true);
+        window.addEventListener("keyup", e => keys[e.code] = false);
 
-        // Desenhar funções básicas
-        function drawRect(x, y, w, h, color) {
-            ctx.fillStyle = color;
-            ctx.fillRect(x, y, w, h);
-        }
-
-        function drawCircle(x, y, r, color) {
-            ctx.fillStyle = color;
-            ctx.beginPath();
-            ctx.arc(x, y, r, 0, Math.PI * 2, true);
-            ctx.closePath();
-            ctx.fill();
-        }
-
-        function drawText(text, x, y, color) {
-            ctx.fillStyle = color;
-            ctx.font = "45px 'Courier New'";
-            ctx.fillText(text, x, y);
-        }
-
-        function drawNet() {
-            for (let i = 0; i <= canvas.height; i += 15) {
-                drawRect(net.x, net.y + i, net.width, net.height, net.color);
+        // Criar faíscas/partículas
+        function createParticles(x, y, color) {
+            for (let i = 0; i < 8; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6,
+                    radius: Math.random() * 3 + 1,
+                    alpha: 1,
+                    color: color
+                });
             }
         }
 
-        // Resetar a bola após um ponto
+        function triggerShake(intensity, duration) {
+            shakeIntensity = intensity;
+            shakeTime = duration;
+        }
+
         function resetBall() {
             ball.x = canvas.width / 2;
             ball.y = canvas.height / 2;
-            ball.speed = 5;
-            ball.velocityX = -ball.velocityX; // Inverte quem começa sacando
-        }
-
-        // Detecção de colisão entre bola e raquete
-        function collision(b, p) {
-            p.top = p.y;
-            p.bottom = p.y + p.height;
-            p.left = p.x;
-            p.right = p.x + p.width;
-
-            b.top = b.y - b.radius;
-            b.bottom = b.y + b.radius;
-            b.left = b.x - b.radius;
-            b.right = b.x + b.radius;
-
-            return b.right > p.left && b.bottom > p.top && b.left < p.right && b.top < p.bottom;
-        }
-
-        // Atualização dos movimentos da física
-        function update() {
-            // Movimentação do Jogador
-            if (keys["ArrowUp"] && user.y > 0) {
-                user.y -= 7;
-            }
-            if (keys["ArrowDown"] && user.y < canvas.height - user.height) {
-                user.y += 7;
-            }
-
-            // Movimentação Inteligente da IA (segue a bola com um pequeno atraso)
-            let computerLevel = 0.08; // Altere para ajustar a dificuldade (ex: 0.1 é mais difícil)
-            com.y += (ball.y - (com.y + com.height / 2)) * computerLevel;
-
-            // Movimento da bola
-            ball.x += ball.velocityX;
-            ball.y += ball.velocityY;
-
-            // Colisão com as paredes superior e inferior
-            if (ball.y - ball.radius < 0 ||
+            ball.speed = 6;
+            ball.velocityX = -ball.
