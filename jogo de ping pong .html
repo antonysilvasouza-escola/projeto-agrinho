@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo de Ping Pong Clássico</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #111;
+            color: white;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        canvas {
+            border: 4px solid #fff;
+            background-color: #000;
+        }
+        .instrucoes {
+            margin-top: 15px;
+            text-align: center;
+            max-width: 500px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>PING PONG</h1>
+    <canvas id="pongCanvas" width="800" height="500"></canvas>
+    <div class="instrucoes">
+        <p><strong>Controles:</strong> Use as setas <strong>Para Cima (↑)</strong> e <strong>Para Baixo (↓)</strong> para mover a sua raquete (direita).</p>
+        <p>O bot controla a raquete da esquerda. Quem fizer 7 pontos primeiro ganha!</p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("pongCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Configurações da Bola
+        const ball = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            radius: 10,
+            speed: 5,
+            velocityX: 5,
+            velocityY: 5,
+            color: "#FFF"
+        };
+
+        // Raquete do Usuário (Direita)
+        const user = {
+            x: canvas.width - 20,
+            y: canvas.height / 2 - 50,
+            width: 10,
+            height: 100,
+            score: 0,
+            color: "#FFF"
+        };
+
+        // Raquete do Computador (Esquerda)
+        const com = {
+            x: 10,
+            y: canvas.height / 2 - 50,
+            width: 10,
+            height: 100,
+            score: 0,
+            color: "#FFF"
+        };
+
+        // Rede do meio do campo
+        const net = {
+            x: (canvas.width / 2) - 1,
+            y: 0,
+            width: 2,
+            height: 10,
+            color: "#FFF"
+        };
+
+        // Controles por teclado
+        const keys = {};
+        window.addEventListener("keydown", (e) => keys[e.code] = true);
+        window.addEventListener("keyup", (e) => keys[e.code] = false);
+
+        // Desenhar funções básicas
+        function drawRect(x, y, w, h, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, w, h);
+        }
+
+        function drawCircle(x, y, r, color) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2, true);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function drawText(text, x, y, color) {
+            ctx.fillStyle = color;
+            ctx.font = "45px 'Courier New'";
+            ctx.fillText(text, x, y);
+        }
+
+        function drawNet() {
+            for (let i = 0; i <= canvas.height; i += 15) {
+                drawRect(net.x, net.y + i, net.width, net.height, net.color);
+            }
+        }
+
+        // Resetar a bola após um ponto
+        function resetBall() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.speed = 5;
+            ball.velocityX = -ball.velocityX; // Inverte quem começa sacando
+        }
+
+        // Detecção de colisão entre bola e raquete
+        function collision(b, p) {
+            p.top = p.y;
+            p.bottom = p.y + p.height;
+            p.left = p.x;
+            p.right = p.x + p.width;
+
+            b.top = b.y - b.radius;
+            b.bottom = b.y + b.radius;
+            b.left = b.x - b.radius;
+            b.right = b.x + b.radius;
+
+            return b.right > p.left && b.bottom > p.top && b.left < p.right && b.top < p.bottom;
+        }
+
+        // Atualização dos movimentos da física
+        function update() {
+            // Movimentação do Jogador
+            if (keys["ArrowUp"] && user.y > 0) {
+                user.y -= 7;
+            }
+            if (keys["ArrowDown"] && user.y < canvas.height - user.height) {
+                user.y += 7;
+            }
+
+            // Movimentação Inteligente da IA (segue a bola com um pequeno atraso)
+            let computerLevel = 0.08; // Altere para ajustar a dificuldade (ex: 0.1 é mais difícil)
+            com.y += (ball.y - (com.y + com.height / 2)) * computerLevel;
+
+            // Movimento da bola
+            ball.x += ball.velocityX;
+            ball.y += ball.velocityY;
+
+            // Colisão com as paredes superior e inferior
+            if (ball.y - ball.radius < 0 ||
