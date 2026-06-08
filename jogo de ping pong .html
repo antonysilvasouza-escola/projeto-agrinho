@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon Pong Evolution</title>
+    <title>Neo Pong Evolution</title>
     <style>
         body {
             margin: 0;
@@ -46,79 +46,5 @@
     <h1>Neo Pong</h1>
     <canvas id="pongCanvas" width="800" height="500"></canvas>
     <div class="controls">
-        <p>Use <strong>Seta Para Cima (↑)</strong> e <strong>Seta Para Baixo (↓)</strong> para mover.</p>
-        <p>A velocidade da bola aumenta a cada rebatida!</p>
-    </div>
-
-    <script>
-        const canvas = document.getElementById("pongCanvas");
-        const ctx = canvas.getContext("2d");
-
-        // Estado de tremor de tela (Screenshake)
-        let shakeTime = 0;
-        let shakeIntensity = 0;
-
-        // Partículas para o efeito de impacto
-        let particles = [];
-
-        // Bola com rastro (trail)
-        const ball = {
-            x: canvas.width / 2,
-            y: canvas.height / 2,
-            radius: 8,
-            speed: 6,
-            velocityX: 6,
-            velocityY: 4,
-            color: "#00fff2",
-            trail: []
-        };
-
-        // Raquetes
-        const player = {
-            x: canvas.width - 25,
-            y: canvas.height / 2 - 50,
-            width: 12,
-            height: 100,
-            score: 0,
-            color: "#ff0077"
-        };
-
-        const bot = {
-            x: 13,
-            y: canvas.height / 2 - 50,
-            width: 12,
-            height: 100,
-            score: 0,
-            color: "#00fff2"
-        };
-
-        // Teclado
-        const keys = {};
-        window.addEventListener("keydown", e => keys[e.code] = true);
-        window.addEventListener("keyup", e => keys[e.code] = false);
-
-        // Criar faíscas/partículas
-        function createParticles(x, y, color) {
-            for (let i = 0; i < 8; i++) {
-                particles.push({
-                    x: x,
-                    y: y,
-                    vx: (Math.random() - 0.5) * 6,
-                    vy: (Math.random() - 0.5) * 6,
-                    radius: Math.random() * 3 + 1,
-                    alpha: 1,
-                    color: color
-                });
-            }
-        }
-
-        function triggerShake(intensity, duration) {
-            shakeIntensity = intensity;
-            shakeTime = duration;
-        }
-
-        function resetBall() {
-            ball.x = canvas.width / 2;
-            ball.y = canvas.height / 2;
-            ball.speed = 6;
-            ball.velocityX = -ball.
+        <p>Use as teclas <strong>Seta Para Cima (↑)</strong> e <strong>Seta Para Baixo (↓)</strong> para mover.</p>
+        <p>A velocidade
